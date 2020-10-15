@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   Collapse,
   Navbar,
@@ -7,15 +7,9 @@ import {
   NavbarBrand,
   Nav,
   NavItem,
-  NavLink,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  NavbarText
-} from 'reactstrap';
+} from "reactstrap";
 
-const Header = (props) => {
+const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = () => setIsOpen(!isOpen);
@@ -28,19 +22,28 @@ const Header = (props) => {
         <Collapse isOpen={isOpen} navbar>
           <Nav className="mr-auto" navbar>
             <NavItem>
-              <Link to='/'>  Home  </Link>
+              <Link className="nav-link" to="/">
+                {" "}
+                Home{" "}
+              </Link>
             </NavItem>
             <NavItem>
-            <Link to='/signup'>  SignUp  </Link>
+              <Link className="nav-link" to="/signup">
+                {" "}
+                SignUp{" "}
+              </Link>
             </NavItem>
             <NavItem>
-            <Link to='/login'>  Login  </Link>
+              <Link className="nav-link" to="/login">
+                {" "}
+                Login{" "}
+              </Link>
             </NavItem>
           </Nav>
         </Collapse>
       </Navbar>
     </div>
   );
-}
+};
 
 export default Header;

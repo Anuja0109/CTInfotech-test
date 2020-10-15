@@ -7,7 +7,7 @@ import SignUp from '../components/auth/SignUp';
 import Login from '../components/auth/Login';
 
 
-const Routes = (props) => {
+const Routes = () => {
     return (
         <Router>
             <Switch>

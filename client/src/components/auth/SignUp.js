@@ -1,7 +1,7 @@
 import Axios from "axios";
 import React, { useState } from "react";
-// import PropTypes from "prop-types";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import Header from "../layout/Header";
 import {
   Col,
   Button,
@@ -9,69 +9,112 @@ import {
   FormGroup,
   Label,
   Input,
-  Container
+  Container,
+  Alert,
 } from "reactstrap";
 
-// SignUp.propTypes = {};
-
-const SignUp = (props) => {
-  const [formData, setFormData ] = useState({
-    email: '',
-    password: '',
-    confirmpassword: ''
+const SignUp = () => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmpassword: "",
   });
 
-  const onInputChange = e => setFormData({
-    ...formData,
-    [e.target.name]: e.target.value
-  });
+  const [notMatched, setNotMatched] = useState(false);
+  const [isNotEmail, setIsNotEmail] = useState(false);
+  const [isNotPassword, setIsNotPassword] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const validEmailRegex = RegExp(
+    /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
+  );
 
-  // const onImageUpload = async e => {
-  //   const formData = new FormData();
-  //   formData.append('avatar', e.target.files[0]);
-  //   console.log();
-  //   const res = await Axios.post(`/api/users/profile/photo`, formData, {
-  //     headers: { 'content-type': 'multipart/form-data'}
-  //  });
-  //  console.log(res);
-  // };
+  const onInputChange = (e) =>
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
 
-  const onFormSubmit = async e => {
+  const onFormSubmit = async (e) => {
     e.preventDefault();
-    // console.log(avatar);
-    if(password !== confirmpassword) {
-      console.log("Please Enter same password");
+    if (!validEmailRegex.test(email)) {
+      setIsNotEmail({
+        isNotEmail: true,
+      });
     }
-    else {
+    if (password.length < 6) {
+      setIsNotPassword({
+        isNotPassword: true,
+      });
+    }
+    if (password !== confirmpassword) {
+      setNotMatched({
+        notMatched: true,
+      });
+    }
+
+    if (
+      validEmailRegex.test(email) &&
+      password.length >= 6 &&
+      password === confirmpassword
+    ) {
+      setIsNotPassword({
+        isNotPassword: false,
+      });
+      setIsError({
+        isError: false,
+      });
+      setIsNotEmail({
+        isNotEmail: false,
+      });
+      setNotMatched({
+        notMatched: false,
+      });
       const newUser = {
         email: email,
-        password: password
-      }
+        password: password,
+      };
 
       try {
         const config = {
           headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+            "Content-Type": "application/json",
+          },
+        };
 
         const body = JSON.stringify(newUser);
 
-        const res = await Axios.post('/api/users', body, config);
-        console.log(res.data.token);
-        const token = res.data.token;
-        localStorage.setItem('token', token);
+        const res = await Axios.post("/api/users", body, config);
+        console.log(res.status);
+        if (res.status === 200) {
+          const token = res.data.token;
+          localStorage.setItem("token", token);
+          setIsSuccess({
+            isSuccess: true,
+          });
+        } else {
+          setIsError({
+            isError: true,
+          });
+        }
       } catch (error) {
-        console.error(error.res);
+        console.error(error);
       }
     }
-  }
+  };
 
   const { email, password, confirmpassword } = formData;
   return (
-    <Container className="App">
+    <>
+      <Header />
+      <Container className="App">
         <h2>Sign Up</h2>
-        <Form className="signup-form" onSubmit={e=> onFormSubmit(e)}>
+        <Form className="signup-form" onSubmit={(e) => onFormSubmit(e)}>
+          {isError && (
+            <Alert color="danger">
+              Bad Request. Invalid Credentials or User may already be present.
+            </Alert>
+          )}
           <Col>
             <FormGroup>
               <Label for="email">Email</Label>
@@ -81,9 +124,12 @@ const SignUp = (props) => {
                 id="mail"
                 value={email}
                 placeholder="Enter a Valid email..."
-                onChange={e => onInputChange(e)}
+                onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
+            {isNotEmail && (
+              <Alert color="danger">Please Enter a Valid Email.</Alert>
+            )}
           </Col>
           <Col>
             <FormGroup>
@@ -94,9 +140,12 @@ const SignUp = (props) => {
                 id="password"
                 value={password}
                 placeholder="Please Enter a 6 digit password..."
-                onChange={e => onInputChange(e)}
+                onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
+            {isNotPassword && (
+              <Alert color="danger">Please enter 6-digits password.</Alert>
+            )}
           </Col>
           <Col>
             <FormGroup>
@@ -107,21 +156,31 @@ const SignUp = (props) => {
                 id="confirmpassword"
                 value={confirmpassword}
                 placeholder="Please Enter a 6 digit password..."
-                onChange={e => onInputChange(e)}
+                onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
+            {notMatched && (
+              <Alert color="danger">
+                Entered Password and Confirm Password should be same.
+              </Alert>
+            )}
           </Col>
-          {/* <Col>
-    
-        <Label for="avatar">Upload DP</Label>
-        <Input type="file" name="avatar" id="avatar" onChange={e=> onImageUpload(e)} />
-        </Col> */}
           <Button color="primary">Sign Up</Button>
-      </Form>
-      <div>
-          <span>Don't have an Account ? <Link to='/login'>Login</Link></span>
-          </div>
+        </Form>
+        <div>
+          <span>
+            Don't have an Account ? <Link to="/login">Login</Link>
+          </span>
+        </div>
+        <>
+          {isSuccess && (
+            <Alert color="success">
+              Registered Successfully. Please Login.
+            </Alert>
+          )}
+        </>
       </Container>
+    </>
   );
 };
 
