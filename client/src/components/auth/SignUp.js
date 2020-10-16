@@ -1,7 +1,8 @@
 import Axios from "axios";
 import React, { useState } from "react";
+import PropTypes from 'prop-types';
 import { Link } from "react-router-dom";
-import Header from "../layout/Header";
+import { connect } from 'react-redux';
 import {
   Col,
   Button,
@@ -12,19 +13,15 @@ import {
   Container,
   Alert,
 } from "reactstrap";
+import { alertAdded } from '../../store/ui/alerts';
 
-const SignUp = () => {
+const SignUp = ({ alertAdded }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmpassword: "",
   });
 
-  const [notMatched, setNotMatched] = useState(false);
-  const [isNotEmail, setIsNotEmail] = useState(false);
-  const [isNotPassword, setIsNotPassword] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const validEmailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
   );
@@ -38,19 +35,13 @@ const SignUp = () => {
   const onFormSubmit = async (e) => {
     e.preventDefault();
     if (!validEmailRegex.test(email)) {
-      setIsNotEmail({
-        isNotEmail: true,
-      });
+      alertAdded({ message: "Plaese enter a valid email.", alertType: "danger"});
     }
     if (password.length < 6) {
-      setIsNotPassword({
-        isNotPassword: true,
-      });
+      alertAdded({ message: "Please enter atleast 6-digit password", alertType: "danger"});
     }
     if (password !== confirmpassword) {
-      setNotMatched({
-        notMatched: true,
-      });
+      alertAdded({ message: "Passwords do not Match.", alertType: "danger"});
     }
 
     if (
@@ -58,18 +49,6 @@ const SignUp = () => {
       password.length >= 6 &&
       password === confirmpassword
     ) {
-      setIsNotPassword({
-        isNotPassword: false,
-      });
-      setIsError({
-        isError: false,
-      });
-      setIsNotEmail({
-        isNotEmail: false,
-      });
-      setNotMatched({
-        notMatched: false,
-      });
       const newUser = {
         email: email,
         password: password,
@@ -89,13 +68,8 @@ const SignUp = () => {
         if (res.status === 200) {
           const token = res.data.token;
           localStorage.setItem("token", token);
-          setIsSuccess({
-            isSuccess: true,
-          });
         } else {
-          setIsError({
-            isError: true,
-          });
+          
         }
       } catch (error) {
         console.error(error);
@@ -105,16 +79,9 @@ const SignUp = () => {
 
   const { email, password, confirmpassword } = formData;
   return (
-    <>
-      <Header />
       <Container className="App">
         <h2>Sign Up</h2>
         <Form className="signup-form" onSubmit={(e) => onFormSubmit(e)}>
-          {isError && (
-            <Alert color="danger">
-              Bad Request. Invalid Credentials or User may already be present.
-            </Alert>
-          )}
           <Col>
             <FormGroup>
               <Label for="email">Email</Label>
@@ -127,9 +94,6 @@ const SignUp = () => {
                 onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
-            {isNotEmail && (
-              <Alert color="danger">Please Enter a Valid Email.</Alert>
-            )}
           </Col>
           <Col>
             <FormGroup>
@@ -143,9 +107,6 @@ const SignUp = () => {
                 onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
-            {isNotPassword && (
-              <Alert color="danger">Please enter 6-digits password.</Alert>
-            )}
           </Col>
           <Col>
             <FormGroup>
@@ -159,11 +120,6 @@ const SignUp = () => {
                 onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
-            {notMatched && (
-              <Alert color="danger">
-                Entered Password and Confirm Password should be same.
-              </Alert>
-            )}
           </Col>
           <Button color="primary">Sign Up</Button>
         </Form>
@@ -172,16 +128,12 @@ const SignUp = () => {
             Don't have an Account ? <Link to="/login">Login</Link>
           </span>
         </div>
-        <>
-          {isSuccess && (
-            <Alert color="success">
-              Registered Successfully. Please Login.
-            </Alert>
-          )}
-        </>
       </Container>
-    </>
   );
 };
 
-export default SignUp;
+SignUp.propTypes = {
+  alertAdded: PropTypes.func.isRequired,
+}
+
+export default connect(null, { alertAdded })(SignUp);

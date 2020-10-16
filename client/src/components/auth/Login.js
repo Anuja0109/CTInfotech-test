@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Axios from "axios";
-import Header from "../layout/Header";
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import {
   Col,
   Button,
@@ -12,15 +13,14 @@ import {
   Container,
   Alert,
 } from "reactstrap";
+import { alertAdded } from '../../store/ui/alerts';
 
-const Login = () => {
+const Login = ({ alertAdded }) => {
   const [state, setState] = useState({
     email: "",
     password: "",
   });
 
-  const [isNotEmail, setIsNotEmail] = useState(false);
-  const [isNotPassword, setIsNotPassword] = useState(false);
   const validEmailRegex = RegExp(
     /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
   );
@@ -34,23 +34,13 @@ const Login = () => {
   const onFormSubmit = async (e) => {
     e.preventDefault();
     if (!validEmailRegex.test(state.email)) {
-      setIsNotEmail({
-        isNotEmail: true,
-      });
+      alertAdded({ message: "Plaese enter a valid email.", alertType: "danger"});
     }
     if (state.password.length < 6) {
-      setIsNotPassword({
-        isNotPassword: true,
-      });
+      alertAdded({ message: "Please enter a valid password", alertType: "danger"});
     }
 
     if (validEmailRegex.test(state.email) && state.password.length >= 6) {
-      setIsNotPassword({
-        isNotPassword: false,
-      });
-      setIsNotEmail({
-        isNotEmail: false,
-      });
 
       const user = {
         email: state.email,
@@ -79,8 +69,6 @@ const Login = () => {
     }
   };
   return (
-    <>
-      <Header />
       <Container className="login">
         <h2>Login</h2>
         <Form className="login-form" onSubmit={(e) => onFormSubmit(e)}>
@@ -96,9 +84,6 @@ const Login = () => {
                 onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
-            {isNotEmail && (
-              <Alert color="danger">Please Enter a Valid Email.</Alert>
-            )}
           </Col>
           <Col>
             <FormGroup>
@@ -112,9 +97,6 @@ const Login = () => {
                 onChange={(e) => onInputChange(e)}
               />
             </FormGroup>
-            {isNotPassword && (
-              <Alert color="danger">Please enter correct password.</Alert>
-            )}
           </Col>
           <Button color="primary">Login</Button>
         </Form>
@@ -124,10 +106,11 @@ const Login = () => {
           </span>
         </div>
       </Container>
-    </>
   );
 };
 
-Login.propTypes = {};
+Login.propTypes = {
+  alertAdded: PropTypes.func.isRequired
+};
 
-export default Login;
+export default connect(null, { alertAdded })(Login);
